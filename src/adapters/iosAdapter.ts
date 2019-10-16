@@ -114,6 +114,10 @@ export class IOSAdapter extends AdapterCollection {
         return target;
     }
 
+    private static getUnixSocket() {
+        return ""
+    }
+
     public static async getProxySettings(args: any): Promise<IIOSProxySettings | string> {
         debug(`iOSAdapter.getProxySettings`);
         let settings: IIOSProxySettings = null;
@@ -121,11 +125,19 @@ export class IOSAdapter extends AdapterCollection {
         // Check that the proxy exists
         const proxyPath = await IOSAdapter.getProxyPath();
 
+        const unix_socket = await IOSAdapter.getUnixSocket()
+
         // Start with remote debugging enabled
         // Use default parameters for the ios_webkit_debug_proxy executable
         const proxyPort = args.proxyPort;
+
+        // const proxyArgs = [
+        //     '--no-frontend',
+        //     '--config=null:' + proxyPort + ',:' + (proxyPort + 1) + '-' + (proxyPort + 101)
+        // ];
+
         const proxyArgs = [
-            '--no-frontend',
+            '-s ' + unix_socket,
             '--config=null:' + proxyPort + ',:' + (proxyPort + 1) + '-' + (proxyPort + 101)
         ];
 
