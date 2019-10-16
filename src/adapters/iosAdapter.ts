@@ -115,7 +115,7 @@ export class IOSAdapter extends AdapterCollection {
     }
 
     private static getUnixSocket() {
-        return "unix:/private/tmp/com.apple.launchd.tjHMgKtWRN/com.apple.webinspectord_sim.socket"
+        return "unix:/private/tmp/com.apple.launchd.0YIp3RqCiu/com.apple.webinspectord_sim.socket"
     }
 
     public static async getProxySettings(args: any): Promise<IIOSProxySettings | string> {
@@ -137,7 +137,8 @@ export class IOSAdapter extends AdapterCollection {
         // ];
 
         const proxyArgs = [
-            '-s ' + unix_socket,
+            '-s', 
+           unix_socket
         ];
 
         settings = {
