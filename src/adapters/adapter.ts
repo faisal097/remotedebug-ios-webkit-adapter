@@ -6,7 +6,7 @@ import * as request from 'request';
 import * as http from 'http';
 import * as WebSocket from 'ws';
 import { EventEmitter } from 'events';
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, exec } from 'child_process';
 import { ITarget, IAdapterOptions } from './adapterInterfaces';
 import { Target } from '../protocols/target';
 import { Logger, debug } from '../logger';
@@ -202,5 +202,14 @@ export class Adapter extends EventEmitter {
             }, 200);
 
         });
+    }
+
+    public getUnixSocket() {
+        exec("$(netstat -n | awk '/com.apple.webinspectord_sim.socket$/{print \"unix:\"$9;exit;}')", function(error, stdout, stderr){
+            console.log("error: ", error)
+            console.log("stdout: ", stdout)
+            console.log("stderr: ", stderr)
+        })  
+        console.log("getUnixSocket executed: ")
     }
 }
