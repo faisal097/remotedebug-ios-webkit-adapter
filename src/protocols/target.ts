@@ -20,6 +20,9 @@ export class Target extends EventEmitter {
     private _requestId: number;
     private _id: string;
 
+    //to support ios 12.2 above
+    private _targetId: string;
+
     constructor(targetId: string, data?: ITarget) {
         super();
         this._data = data;
@@ -52,9 +55,28 @@ export class Target extends EventEmitter {
             Logger.error(err);
         });
 
+        // this._wsTarget.on('message', (message) => {
+        //     this.onMessageFromTarget(message);
+        // });
+
         this._wsTarget.on('message', (message) => {
-            this.onMessageFromTarget(message);
+            const msg = JSON.parse(message);
+            switch (msg.method) {
+                case 'Target.targetCreated':
+                    this._targetId = msg.params.targetInfo.targetId;
+                    break;
+                case 'Target.dispatchMessageFromTarget':
+                    if (msg.params && msg.params.message) {
+                        message = msg.params.message;
+                    }
+                    this.onMessageFromTarget(message);
+                    break;
+                default:
+                    // ignore
+            }
         });
+
+
         this._wsTarget.on('open', () => {
             debug(`Connection established to ${url}`);
             this._isConnected = true;
@@ -244,6 +266,17 @@ export class Target extends EventEmitter {
     }
 
     private sendToTarget(rawMessage: string): void {
+        
+        const msg = JSON.parse(rawMessage);
+        rawMessage = JSON.stringify({
+            id: msg.id,
+            method: 'Target.sendMessageToTarget',
+            params: {
+                message: rawMessage,
+                targetId: this._targetId
+            }
+        });
+
         debug(`sendToTarget.${rawMessage}`);
 
         // Make sure the target socket can receive messages
