@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as WebSocket from 'ws';
 import * as which from 'which';
-import { execFile } from 'child-process-promise';
+import { execFile, exec } from 'child-process-promise';
 import { Logger, debug } from '../logger';
 import { Adapter } from './adapter';
 import { Target } from '../protocols/target';
@@ -115,6 +115,27 @@ export class IOSAdapter extends AdapterCollection {
     }
 
     private static getUnixSocket() {
+        exec(`$(netstat -n | awk '/com.apple.webinspectord_sim.socket$/{print "unix:"$9;exit;}')`)
+        .then(function(result){
+            var stdout = result.stdout;
+            var stderr = result.stderr;
+
+            console.log("stdout: ", stdout)
+            debug("stdout:")
+            debug(stdout)
+            console.log("stderr: ", stderr)
+            debug("stderr:")
+            debug(stderr)
+
+        })
+        .catch(function(error){
+            console.log("error: ", error)
+            debug("error:")
+            debug(error)
+        })
+        
+        console.log("getUnixSocket executed: ")
+        debug("getUnixSocket executed:")
         return "unix:/private/tmp/com.apple.launchd.0YIp3RqCiu/com.apple.webinspectord_sim.socket"
     }
 
