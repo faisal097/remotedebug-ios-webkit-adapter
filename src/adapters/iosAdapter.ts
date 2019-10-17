@@ -115,30 +115,7 @@ export class IOSAdapter extends AdapterCollection {
     }
 
     private static getUnixSocket() {
-	return exec(`netstat -n | awk '/com.apple.webinspectord_sim.socket$/{print "unix:"$9;exit;}'`)
-        /*.then(function(result){
-            stdout = result.stdout.trim("\n");
-            var stderr = result.stderr;
-
-            console.log("stdout: ", stdout)
-            debug("stdout:")
-            debug(stdout)
-            console.log("stderr: ", stderr)
-            debug("stderr:")
-            debug(stderr)
-
-        })
-        .catch(function(error){
-            console.log("error: ", error)
-            debug("error:")
-            debug(error)
-        })
-        
-        console.log("getUnixSocket executed: ")
-        debug("getUnixSocket executed:")
-	return stdout
-	*/
-        //return "unix:/private/tmp/com.apple.launchd.0YIp3RqCiu/com.apple.webinspectord_sim.socket"
+	    return exec(`netstat -n | awk '/com.apple.webinspectord_sim.socket$/{print "unix:"$9;exit;}'`)
     }
 
     public static async getProxySettings(args: any): Promise<IIOSProxySettings | string> {
@@ -148,19 +125,14 @@ export class IOSAdapter extends AdapterCollection {
         // Check that the proxy exists
         const proxyPath = await IOSAdapter.getProxyPath();
 
-        const unix_socket = await IOSAdapter.getUnixSocket()
+        const unixSocket = await IOSAdapter.getUnixSocket()
         let socketPath = ""
-        if (unix_socket && unix_socket.stdout && unix_socket.stdout != ""){
-		socketPath = unix_socket.stdout.trim("\n")
-	}
+        if (unixSocket && unixSocket.stdout && unixSocket.stdout != ""){
+            socketPath = unixSocket.stdout.trim("\n")
+        }
         // Start with remote debugging enabled
         // Use default parameters for the ios_webkit_debug_proxy executable
         const proxyPort = args.proxyPort;
-
-        // const proxyArgs = [
-        //     '--no-frontend',
-        //     '--config=null:' + proxyPort + ',:' + (proxyPort + 1) + '-' + (proxyPort + 101)
-        // ];
 
         const proxyArgs = [
             '-s', 

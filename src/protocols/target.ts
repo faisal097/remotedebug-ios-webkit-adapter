@@ -22,6 +22,7 @@ export class Target extends EventEmitter {
 
     //to support ios 12.2 above
     private _targetId: string;
+    private _iosVersion =  process.env.IOS_VERSION ? parseFloat(process.env.IOS_VERSION) : 11.3
 
     constructor(targetId: string, data?: ITarget) {
         super();
@@ -55,26 +56,28 @@ export class Target extends EventEmitter {
             Logger.error(err);
         });
 
-        // this._wsTarget.on('message', (message) => {
-        //     this.onMessageFromTarget(message);
-        // });
-
-        this._wsTarget.on('message', (message) => {
-            const msg = JSON.parse(message);
-            switch (msg.method) {
-                case 'Target.targetCreated':
-                    this._targetId = msg.params.targetInfo.targetId;
-                    break;
-                case 'Target.dispatchMessageFromTarget':
-                    if (msg.params && msg.params.message) {
-                        message = msg.params.message;
-                    }
-                    this.onMessageFromTarget(message);
-                    break;
-                default:
-                    // ignore
-            }
-        });
+        if(this._iosVersion < 12.2) {
+            this._wsTarget.on('message', (message) => {
+                this.onMessageFromTarget(message);
+            });
+        } else {
+            this._wsTarget.on('message', (message) => {
+                const msg = JSON.parse(message);
+                switch (msg.method) {
+                    case 'Target.targetCreated':
+                        this._targetId = msg.params.targetInfo.targetId;
+                        break;
+                    case 'Target.dispatchMessageFromTarget':
+                        if (msg.params && msg.params.message) {
+                            message = msg.params.message;
+                        }
+                        this.onMessageFromTarget(message);
+                        break;
+                    default:
+                        // ignore
+                }
+            });
+        }
 
 
         this._wsTarget.on('open', () => {
@@ -266,16 +269,17 @@ export class Target extends EventEmitter {
     }
 
     private sendToTarget(rawMessage: string): void {
-        
-        const msg = JSON.parse(rawMessage);
-        rawMessage = JSON.stringify({
-            id: msg.id,
-            method: 'Target.sendMessageToTarget',
-            params: {
-                message: rawMessage,
-                targetId: this._targetId
-            }
-        });
+        if(this._iosVersion >= 12.2) {
+            const msg = JSON.parse(rawMessage);
+            rawMessage = JSON.stringify({
+                id: msg.id,
+                method: 'Target.sendMessageToTarget',
+                params: {
+                    message: rawMessage,
+                    targetId: this._targetId
+                }
+            });
+        }
 
         debug(`sendToTarget.${rawMessage}`);
 
