@@ -66,6 +66,11 @@ export class Target extends EventEmitter {
                 switch (msg.method) {
                     case 'Target.targetCreated':
                         this._targetId = msg.params.targetInfo.targetId;
+                        this._isConnected = true;
+                        for (let i = 0; i < this._messageBuffer.length; i++) {
+                            this.onMessageFromTools(this._messageBuffer[i]);
+                        }
+                        this._messageBuffer = [];
                         break;
                     case 'Target.dispatchMessageFromTarget':
                         if (msg.params && msg.params.message) {
@@ -82,11 +87,11 @@ export class Target extends EventEmitter {
 
         this._wsTarget.on('open', () => {
             debug(`Connection established to ${url}`);
-            this._isConnected = true;
-            for (let i = 0; i < this._messageBuffer.length; i++) {
-                this.onMessageFromTools(this._messageBuffer[i]);
-            }
-            this._messageBuffer = [];
+            // this._isConnected = true;
+            // for (let i = 0; i < this._messageBuffer.length; i++) {
+            //     this.onMessageFromTools(this._messageBuffer[i]);
+            // }
+            // this._messageBuffer = [];
         });
         this._wsTarget.on('close', () => {
             debug('Socket is closed');
