@@ -87,11 +87,13 @@ export class Target extends EventEmitter {
 
         this._wsTarget.on('open', () => {
             debug(`Connection established to ${url}`);
-            // this._isConnected = true;
-            // for (let i = 0; i < this._messageBuffer.length; i++) {
-            //     this.onMessageFromTools(this._messageBuffer[i]);
-            // }
-            // this._messageBuffer = [];
+            if(this._iosVersion < 12.2) {
+                this._isConnected = true;
+                for (let i = 0; i < this._messageBuffer.length; i++) {
+                    this.onMessageFromTools(this._messageBuffer[i]);
+                }
+                this._messageBuffer = [];
+            }
         });
         this._wsTarget.on('close', () => {
             debug('Socket is closed');
